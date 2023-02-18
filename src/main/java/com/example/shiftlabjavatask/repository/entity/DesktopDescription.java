@@ -15,9 +15,12 @@ import java.util.Objects;
 @AllArgsConstructor
 public class DesktopDescription {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "id")
-    private Product id;
+    private Product product;
 
     @Column
     @Enumerated(EnumType.STRING)
