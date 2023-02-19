@@ -17,7 +17,7 @@ public class Product {
     @Column(name = "id")
     private long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String serialNumber;
 
     @Column
