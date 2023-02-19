@@ -5,4 +5,6 @@ import com.example.shiftlabjavatask.dto.ProductIdDto;
 
 public interface ProductService {
     ProductIdDto createProduct(ProductDto productDto);
+
+    void updateProduct(ProductDto productDto);
 }

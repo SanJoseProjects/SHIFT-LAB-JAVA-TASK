@@ -3,9 +3,6 @@ package com.example.shiftlabjavatask.repository.entity;
 import com.example.shiftlabjavatask.repository.entity.enums.ProductType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.Hibernate;
-
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -35,4 +32,13 @@ public class Product {
     @Column
     @Enumerated(EnumType.STRING)
     private ProductType type;
+
+    public Product(Product product) {
+        this.id = product.getId();
+        this.serialNumber = product.getSerialNumber();
+        this.producer = product.getProducer();
+        this.price = product.getPrice();
+        this.quantity = product.getQuantity();
+        this.type = product.getType();
+    }
 }
