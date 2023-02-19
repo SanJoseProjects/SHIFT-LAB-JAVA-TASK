@@ -176,11 +176,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductDto findById(Long id) {
-        if (id == null) {
-            log.warn("Field 'id' is empty");
-            throw new ProductIdIsEmpty(messageSource.getMessage("product.id.is_empty", null, Locale.getDefault()));
-        }
-
         Product product = null;
         if (productRepository.findById(id).isPresent())
             product = productRepository.findById(id).get();

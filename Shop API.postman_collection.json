@@ -1,0 +1,149 @@
+{
+	"info": {
+		"_postman_id": "1125f84a-e265-4266-8d05-c9c69ca396e6",
+		"name": "Shop API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21844102"
+	},
+	"item": [
+		{
+			"name": "Create product",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"serialNumber\": \"EFJEIFJE-2323FEEF-33R3FFVR\",\r\n    \"producer\": \"Lenovo\",\r\n    \"price\": \"399.99\",\r\n    \"quantity\": \"100\",\r\n    \"type\": \"SCREEN\",\r\n    \"description\": \"19.5\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/shop/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"shop",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update product",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"1\",\r\n    \"serialNumber\": \"EFJEIFJE-2323FEEF-33R3FFVE\",\r\n    \"producer\": \"Lenovo\",\r\n    \"price\": \"399.99\",\r\n    \"quantity\": \"100\",\r\n    \"type\": \"SCREEN\",\r\n    \"description\": \"19\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/shop/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"shop",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete product",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"2\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/shop/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"shop",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get products list by category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/shop/products?type=SCREEN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"shop",
+						"products"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "SCREEN"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get product by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/shop/product?id=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"shop",
+						"product"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
