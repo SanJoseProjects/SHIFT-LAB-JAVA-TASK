@@ -72,6 +72,19 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
+    @Transactional
+    public void deleteProduct(ProductIdDto productIdDto) {
+        Product product;
+        if (productRepository.findById(productIdDto.getId()).isPresent())
+        {
+            product = productRepository.findById(productIdDto.getId()).get();
+            deleteProductDescription(product);
+            productRepository.delete(product);
+        }
+    }
+
+
     private void saveProductDescription(Product product, String description) {
         switch (product.getType()) {
             case DESKTOP_PC -> {

@@ -29,4 +29,11 @@ public class ProductController {
         productService.updateProduct(productDto);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping(value = "products")
+    public ResponseEntity<Void> deleteProduct(@RequestBody ProductIdDto productIdDto)
+    {
+        productService.deleteProduct(productIdDto);
+        return ResponseEntity.ok().build();
+    }
 }
