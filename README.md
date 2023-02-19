@@ -1,18 +1,18 @@
-#SHOP
-##Использованные технологии
+# SHOP
+## Использованные технологии
 1. БД: H2 (in memory)
 2. Spring Framework: 6.0.4
 3. SpringBoot: 3.0.2
 4. MapStruct: 1.5.3Final
 5. lombok
 
-##Развёртывание
+## Развёртывание
 Данное приложение нужно открыть в IntelliJ IDEA, после чего нужно запустить сборщик gradle.
 В gradle прописаны все зависимости и всё необходимое поставится при сборке.
 Далее запустить приложение через метод main класса Application.
 
-##API
-###Создать товар
+## API
+### Создать товар
 POST http://localhost:8081/shop/products 
 
 Req
@@ -51,7 +51,7 @@ Http status 400
 }
 ```
 
-###Редактировать товар
+### Редактировать товар
 PUT http://localhost:8081/shop/products
 
 Req
@@ -91,7 +91,7 @@ Http status 404
 }
 ```
 
-###Удаление товара
+### Удаление товара
 DELETE http://localhost:8081/shop/products
 
 Req
@@ -126,7 +126,7 @@ Http status 404
 ```
 
 
-###Получить список товаров по категории
+### Получить список товаров по категории
 GET http://localhost:8081/shop/products?type=SCREEN
 
 Ans
@@ -154,7 +154,7 @@ Http status 400
 }
 ```
 
-###Получить товар по id
+### Получить товар по id
 GET http://localhost:8081/shop/product?id=1
 
 Ans
@@ -180,7 +180,7 @@ Http status 404
 }
 ```
 
-###Дополнительные ошибки
+### Дополнительные ошибки
 В запросах POST и PUT также могут вылететь следующие ошибки
 
 Http status 400
