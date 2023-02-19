@@ -2,6 +2,7 @@ package com.example.shiftlabjavatask.service;
 
 import com.example.shiftlabjavatask.dto.ProductDto;
 import com.example.shiftlabjavatask.dto.ProductIdDto;
+import com.example.shiftlabjavatask.mapper.ProductMapper;
 import com.example.shiftlabjavatask.repository.*;
 import com.example.shiftlabjavatask.repository.entity.*;
 import com.example.shiftlabjavatask.repository.entity.enums.DesktopPcFormFactor;
@@ -10,6 +11,9 @@ import com.example.shiftlabjavatask.repository.entity.enums.ProductType;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -82,6 +86,91 @@ public class ProductServiceImpl implements ProductService {
             deleteProductDescription(product);
             productRepository.delete(product);
         }
+    }
+
+    @Override
+    public List<ProductDto> findAllByType(String type) {
+        ProductType productType = ProductType.valueOf(type);
+        List<ProductDto> products = new ArrayList<>();
+        switch (productType) {
+            case DESKTOP_PC -> {
+                List<DesktopDescription> desktopDescriptions = desktopDescriptionRepository.findAll().stream().toList();
+                for (DesktopDescription desktopDescription : desktopDescriptions)
+                {
+                    ProductDto product = ProductMapper.INSTANCE.productToProductDto(
+                            productRepository.findById(desktopDescription.getProduct().getId()).get(),
+                            desktopDescription.getFormFactor().toString());
+                    products.add(product);
+                }
+            }
+
+            case LAPTOP -> {
+                List<LaptopDescription> laptopDescriptions = laptopDescriptionRepository.findAll().stream().toList();
+                for (LaptopDescription laptopDescription : laptopDescriptions)
+                {
+                    ProductDto product = ProductMapper.INSTANCE.productToProductDto(
+                            productRepository.findById(laptopDescription.getProduct().getId()).get(),
+                            laptopDescription.getSize().toString());
+                    products.add(product);
+                }
+            }
+
+            case SCREEN -> {
+                List<ScreenDescription> screenDescriptions = screenDescriptionRepository.findAll().stream().toList();
+                for (ScreenDescription screenDescription : screenDescriptions)
+                {
+                    ProductDto product = ProductMapper.INSTANCE.productToProductDto(
+                            productRepository.findById(screenDescription.getProduct().getId()).get(),
+                            String.valueOf(screenDescription.getDiagonal()));
+                    products.add(product);
+                }
+            }
+
+            case HARD_DRIVE -> {
+                List<HardDriveDescription> hardDriveDescriptions = hardDriveDescriptionRepository.findAll().stream().toList();
+                for (HardDriveDescription hardDriveDescription : hardDriveDescriptions)
+                {
+                    ProductDto product = ProductMapper.INSTANCE.productToProductDto(
+                            productRepository.findById(hardDriveDescription.getProduct().getId()).get(),
+                            String.valueOf(hardDriveDescription.getCapacity()));
+                    products.add(product);
+                }
+            }
+        }
+
+        return products;
+    }
+
+    @Override
+    @Transactional
+    public ProductDto findById(Long id) {
+        Product product = null;
+        if (productRepository.findById(id).isPresent())
+            product = productRepository.findById(id).get();
+
+        switch (product.getType()) {
+            case DESKTOP_PC -> {
+                return ProductMapper.INSTANCE.productToProductDto(product,
+                        desktopDescriptionRepository.findByProductId(id).getFormFactor().toString());
+            }
+
+            case LAPTOP -> {
+                return ProductMapper.INSTANCE.productToProductDto(product,
+                        laptopDescriptionRepository.findByProductId(id).getSize().toString());
+            }
+
+            case SCREEN -> {
+                return ProductMapper.INSTANCE.productToProductDto(product,
+                        String.valueOf(screenDescriptionRepository.findByProductId(id).getDiagonal()));
+            }
+
+            case HARD_DRIVE -> {
+                return ProductMapper.INSTANCE.productToProductDto(product,
+                        String.valueOf(hardDriveDescriptionRepository.findByProductId(id).getCapacity()));
+            }
+        }
+
+        return null;
     }
 
 
@@ -170,10 +259,10 @@ public class ProductServiceImpl implements ProductService {
     private void deleteProductDescription(Product oldProductData)
     {
         switch (oldProductData.getType()) {
-            case DESKTOP_PC -> desktopDescriptionRepository.delete(desktopDescriptionRepository.getReferenceById(oldProductData.getId()));
-            case LAPTOP -> laptopDescriptionRepository.delete(laptopDescriptionRepository.getReferenceById(oldProductData.getId()));
-            case SCREEN -> screenDescriptionRepository.delete(screenDescriptionRepository.getReferenceById(oldProductData.getId()));
-            case HARD_DRIVE -> hardDriveDescriptionRepository.delete(hardDriveDescriptionRepository.getReferenceById(oldProductData.getId()));
+            case DESKTOP_PC -> desktopDescriptionRepository.delete(desktopDescriptionRepository.findByProductId(oldProductData.getId()));
+            case LAPTOP -> laptopDescriptionRepository.delete(laptopDescriptionRepository.findByProductId(oldProductData.getId()));
+            case SCREEN -> screenDescriptionRepository.delete(screenDescriptionRepository.findByProductId(oldProductData.getId()));
+            case HARD_DRIVE -> hardDriveDescriptionRepository.delete(hardDriveDescriptionRepository.findByProductId(oldProductData.getId()));
         }
     }
 }
