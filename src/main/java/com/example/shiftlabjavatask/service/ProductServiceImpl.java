@@ -65,6 +65,10 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(ProductDto productDto) {
         Product product = null;
         Product oldProductData = null;
+
+        if (productDto.getId() == null)
+            throw new ProductIdIsEmpty(messageSource.getMessage("product.id.is_empty", null, Locale.getDefault()));
+
         if (productRepository.findById(productDto.getId()).isPresent()) {
             product = productRepository.findById(productDto.getId()).get();
             oldProductData = new Product(productRepository.findById(productDto.getId()).get());

@@ -1,5 +1,6 @@
 package com.example.shiftlabjavatask.controller;
 
+import com.example.shiftlabjavatask.dto.ProductIdDto;
 import com.example.shiftlabjavatask.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,11 @@ public class ErrorControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ProductQuantityNotCorrect.class)
     public ResponseEntity<Map<String, Object>> handleProductQuantityNotCorrect(Exception ex) {
         return handleCustomException(HttpStatus.BAD_REQUEST, 11, ex);
+    }
+
+    @ExceptionHandler(ProductIdIsEmpty.class)
+    public ResponseEntity<Map<String, Object>> handleProductIdIsEmpty(Exception ex) {
+        return handleCustomException(HttpStatus.BAD_REQUEST, 12, ex);
     }
 
     //Формирует кастомное тело ответа на запрос клиента с кодом и текстом ошибки
