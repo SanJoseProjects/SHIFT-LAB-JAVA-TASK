@@ -10,6 +10,8 @@ import com.example.shiftlabjavatask.repository.entity.enums.DesktopPcFormFactor;
 import com.example.shiftlabjavatask.repository.entity.enums.LaptopSize;
 import com.example.shiftlabjavatask.repository.entity.enums.ProductType;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -19,8 +21,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+
 @Service
 public class ProductServiceImpl implements ProductService {
+    private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
+
     private final ProductRepository productRepository;
     private final DesktopDescriptionRepository desktopDescriptionRepository;
     private final HardDriveDescriptionRepository hardDriveDescriptionRepository;
@@ -43,9 +48,10 @@ public class ProductServiceImpl implements ProductService {
     public ProductIdDto createProduct(ProductDto productDto) {
         Product product = productRepository.findBySerialNumber(productDto.getSerialNumber());
 
-        if (product != null)
+        if (product != null) {
+            log.warn("ProductDto with current serial number already exists");
             throw new ProductSerialNumberIsBusy(messageSource.getMessage("product.serial_number.is_busy", null, Locale.getDefault()));
-
+        }
         checkProducts(productDto);
 
         product = new Product();
@@ -66,17 +72,20 @@ public class ProductServiceImpl implements ProductService {
         Product product = null;
         Product oldProductData = null;
 
-        if (productDto.getId() == null)
+        if (productDto.getId() == null) {
+            log.warn("ProductDto has empty 'id' field");
             throw new ProductIdIsEmpty(messageSource.getMessage("product.id.is_empty", null, Locale.getDefault()));
+        }
 
         if (productRepository.findById(productDto.getId()).isPresent()) {
             product = productRepository.findById(productDto.getId()).get();
             oldProductData = new Product(productRepository.findById(productDto.getId()).get());
         }
 
-        if (product == null)
+        if (product == null) {
+            log.warn("Product with current id doesn't exists");
             throw new ProductNotFound(messageSource.getMessage("product.not_found", null, Locale.getDefault()));
-
+        }
         checkProducts(productDto);
 
         product.setProducer(productDto.getProducer());
@@ -93,6 +102,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(ProductIdDto productIdDto) {
+        if (productIdDto.getId() == null) {
+            log.warn("ProductIdDto has empty 'id' field");
+            throw new ProductIdIsEmpty(messageSource.getMessage("product.id.is_empty", null, Locale.getDefault()));
+        }
         Product product = null;
         if (productRepository.findById(productIdDto.getId()).isPresent()) {
             product = productRepository.findById(productIdDto.getId()).get();
@@ -100,14 +113,18 @@ public class ProductServiceImpl implements ProductService {
             productRepository.delete(product);
         }
 
-        if (product == null)
+        if (product == null) {
+            log.warn("Product with current id not found: {}", productIdDto.getId());
             throw new ProductNotFound(messageSource.getMessage("product.not_found", null, Locale.getDefault()));
+        }
     }
 
     @Override
     public List<ProductDto> findAllByType(String type) {
-        if (Arrays.stream(ProductType.values()).noneMatch(el -> el.toString().equals(type)))
+        if (Arrays.stream(ProductType.values()).noneMatch(el -> el.toString().equals(type))) {
+            log.warn("Incorrect product type: {}", type);
             throw new ProductTypeNotCorrect(messageSource.getMessage("product.type.not_correct", null, Locale.getDefault()));
+        }
 
         ProductType productType = ProductType.valueOf(type);
         List<ProductDto> products = new ArrayList<>();
@@ -159,12 +176,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductDto findById(Long id) {
+        if (id == null) {
+            log.warn("Field 'id' is empty");
+            throw new ProductIdIsEmpty(messageSource.getMessage("product.id.is_empty", null, Locale.getDefault()));
+        }
+
         Product product = null;
         if (productRepository.findById(id).isPresent())
             product = productRepository.findById(id).get();
 
-        if (product == null)
+        if (product == null) {
+            log.warn("Product with current id not found: {}", id);
             throw new ProductNotFound(messageSource.getMessage("product.not_found", null, Locale.getDefault()));
+        }
 
         switch (product.getType()) {
             case DESKTOP_PC -> {
@@ -195,8 +219,10 @@ public class ProductServiceImpl implements ProductService {
     private void saveProductDescription(Product product, String description) {
         switch (product.getType()) {
             case DESKTOP_PC -> {
-                if (Arrays.stream(DesktopPcFormFactor.values()).noneMatch(el -> el.toString().equals(description)))
+                if (Arrays.stream(DesktopPcFormFactor.values()).noneMatch(el -> el.toString().equals(description))) {
+                    log.warn("Incorrect format-factor: {}", description);
                     throw new ProductDesktopPcTypeNotCorrect(messageSource.getMessage("product.desktop_pc.type.not_correct", null, Locale.getDefault()));
+                }
 
                 DesktopDescription desktopDescription = new DesktopDescription();
                 desktopDescription.setProduct(product);
@@ -204,27 +230,30 @@ public class ProductServiceImpl implements ProductService {
                 desktopDescriptionRepository.save(desktopDescription);
             }
             case LAPTOP -> {
-                if (Arrays.stream(LaptopSize.values()).noneMatch(el -> el.toString().equals(description)))
+                if (Arrays.stream(LaptopSize.values()).noneMatch(el -> el.toString().equals(description))) {
+                    log.warn("Incorrect laptop size: {}", description);
                     throw new ProductLaptopSizeNotCorrect(messageSource.getMessage("product.laptop.size.not_correct", null, Locale.getDefault()));
-
+                }
                 LaptopDescription laptopDescription = new LaptopDescription();
                 laptopDescription.setProduct(product);
                 laptopDescription.setSize(LaptopSize.valueOf(description));
                 laptopDescriptionRepository.save(laptopDescription);
             }
             case SCREEN -> {
-                if (!isNumeric(description) || Double.parseDouble(description) <= 0)
+                if (!isNumeric(description) || Double.parseDouble(description) <= 0) {
+                    log.warn("Incorrect screen diagonal: {}", description);
                     throw new ProductScreenDiagonalNotCorrect(messageSource.getMessage("product.scree.diagonal.not_correct", null, Locale.getDefault()));
-
+                }
                 ScreenDescription screenDescription = new ScreenDescription();
                 screenDescription.setProduct(product);
                 screenDescription.setDiagonal(Double.parseDouble(description));
                 screenDescriptionRepository.save(screenDescription);
             }
             case HARD_DRIVE -> {
-                if (!isNumeric(description) || Double.parseDouble(description) <= 0)
+                if (!isNumeric(description) || Double.parseDouble(description) <= 0) {
+                    log.warn("Incorrect hard drive capacity: {}", description);
                     throw new ProductHardDriveSizeNotCorrect(messageSource.getMessage("product.hard_drive.capacity.not_correct", null, Locale.getDefault()));
-
+                }
                 HardDriveDescription hardDriveDescription = new HardDriveDescription();
                 hardDriveDescription.setProduct(product);
                 hardDriveDescription.setCapacity(Double.parseDouble(description));
@@ -236,9 +265,10 @@ public class ProductServiceImpl implements ProductService {
     private void updateProductDescription(Product product, Product oldProductData, String description) {
         switch (product.getType()) {
             case DESKTOP_PC -> {
-                if (Arrays.stream(DesktopPcFormFactor.values()).noneMatch(el -> el.toString().equals(description)))
+                if (Arrays.stream(DesktopPcFormFactor.values()).noneMatch(el -> el.toString().equals(description))) {
+                    log.warn("Incorrect format-factor: {}", description);
                     throw new ProductDesktopPcTypeNotCorrect(messageSource.getMessage("product.desktop_pc.type.not_correct", null, Locale.getDefault()));
-
+                }
                 if (!oldProductData.getType().equals(ProductType.DESKTOP_PC))
                     deleteProductDescription(oldProductData);
 
@@ -251,10 +281,10 @@ public class ProductServiceImpl implements ProductService {
                 desktopDescriptionRepository.save(desktopDescription);
             }
             case LAPTOP -> {
-                if (Arrays.stream(LaptopSize.values()).noneMatch(el -> el.toString().equals(description)))
+                if (Arrays.stream(LaptopSize.values()).noneMatch(el -> el.toString().equals(description))) {
+                    log.warn("Incorrect laptop size: {}", description);
                     throw new ProductLaptopSizeNotCorrect(messageSource.getMessage("product.laptop.size.not_correct", null, Locale.getDefault()));
-
-
+                }
                 if (!oldProductData.getType().equals(ProductType.LAPTOP))
                     deleteProductDescription(oldProductData);
 
@@ -267,9 +297,10 @@ public class ProductServiceImpl implements ProductService {
                 laptopDescriptionRepository.save(laptopDescription);
             }
             case SCREEN -> {
-                if (!isNumeric(description) || Double.parseDouble(description) <= 0)
+                if (!isNumeric(description) || Double.parseDouble(description) <= 0) {
+                    log.warn("Incorrect screen diagonal: {}", description);
                     throw new ProductScreenDiagonalNotCorrect(messageSource.getMessage("product.scree.diagonal.not_correct", null, Locale.getDefault()));
-
+                }
 
                 if (!oldProductData.getType().equals(ProductType.SCREEN))
                     deleteProductDescription(oldProductData);
@@ -283,8 +314,10 @@ public class ProductServiceImpl implements ProductService {
                 screenDescriptionRepository.save(screenDescription);
             }
             case HARD_DRIVE -> {
-                if (!isNumeric(description) || Double.parseDouble(description) <= 0)
+                if (!isNumeric(description) || Double.parseDouble(description) <= 0) {
+                    log.warn("Incorrect hard drive capacity: {}", description);
                     throw new ProductHardDriveSizeNotCorrect(messageSource.getMessage("product.hard_drive.capacity.not_correct", null, Locale.getDefault()));
+                }
 
                 if (!oldProductData.getType().equals(ProductType.HARD_DRIVE))
                     deleteProductDescription(oldProductData);
@@ -310,20 +343,29 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void checkProducts(ProductDto productDto) {
-        if (productDto.getSerialNumber() == null)
+        if (productDto.getSerialNumber() == null) {
+            log.warn("ProductDto has empty serial number");
             throw new ProductSerialNumberIsEmpty(messageSource.getMessage("product.serial_number.is_empty", null, Locale.getDefault()));
+        }
 
-        if (Arrays.stream(ProductType.values()).noneMatch(el -> el.toString().equals(productDto.getType())))
+        if (Arrays.stream(ProductType.values()).noneMatch(el -> el.toString().equals(productDto.getType()))) {
+            log.warn("ProductDto has incorrect product category");
             throw new ProductTypeNotCorrect(messageSource.getMessage("product.type.not_correct", null, Locale.getDefault()));
-
-        if (productDto.getDescription() == null)
+        }
+        if (productDto.getDescription() == null) {
+            log.warn("ProductDto has empty description");
             throw new ProductDescriptionIsEmpty(messageSource.getMessage("product.description.is_empty", null, Locale.getDefault()));
+        }
 
-        if (productDto.getPrice() <= 0)
+        if (productDto.getPrice() <= 0) {
+            log.warn("ProductDto has incorrect product price: {}", productDto.getPrice());
             throw new ProductPriceNotCorrect(messageSource.getMessage("product.price.not_correct", null, Locale.getDefault()));
+        }
 
-        if (productDto.getQuantity() < 0)
+        if (productDto.getQuantity() < 0) {
+            log.warn("ProductDto has incorrect product quantity: {}", productDto.getQuantity());
             throw new ProductQuantityNotCorrect(messageSource.getMessage("product.quantity.not_correct", null, Locale.getDefault()));
+        }
     }
 
     private boolean isNumeric(String s) {
